@@ -1,0 +1,63 @@
+module VendingMachine_Testbench();
+
+    reg clk, rst, selectChips, selectPepsi;
+    reg [5:0] coin;
+    wire dispenseChips, dispensePepsi;
+
+    // Instantiate the vending machine
+    VendingMachine vending_machine(
+        .clk(clk),
+        .rst(rst),
+        .coin(coin),
+        .selectChips(selectChips),
+        .selectPepsi(selectPepsi),
+        .dispenseChips(dispenseChips),
+        .dispensePepsi(dispensePepsi)
+    );
+
+    // Clock generation
+    always begin
+        #5 clk = ~clk;
+    end
+
+    // Test scenario
+    initial begin
+        $dumpfile("vending_machine.vcd"); // Output VCD file for waveform
+        $dumpvars(0, VendingMachine_Testbench); // Dump all variables
+
+        clk = 0;
+        rst = 1;
+        selectChips = 0;
+        selectPepsi = 0;
+        coin = 0;
+
+        #10 rst = 0; // Release reset
+
+        // Test inserting coins
+        coin = 6'b000001; // Insert 1 Rupee
+        #10;
+        coin = 6'b000011; // Insert 3 Rupees
+        #10;
+        coin = 6'b000101; // Insert 5 Rupees
+        #10;
+
+        // Select chips and Pepsi
+        selectChips = 1;
+        #10;
+        selectChips = 0;
+        selectPepsi = 1;
+        #10;
+        selectPepsi = 0;
+
+        // Insert coins to buy chips and Pepsi
+        coin = 6'b001000; // Insert 8 Rupees (insufficient for both)
+        #10;
+        coin = 6'b010000; // Insert 16 Rupees (sufficient for chips)
+        #10;
+        coin = 6'b100000; // Insert 32 Rupees (sufficient for Pepsi)
+        #10;
+
+        $finish; // End simulation
+    end
+
+endmodule
